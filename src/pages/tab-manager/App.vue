@@ -1,73 +1,34 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import type { SavedTab } from '@/types'
-import { getTabs, removeTab, clearAllTabs, saveTabs } from '@/utils/storage'
+import { onMounted, onUnmounted } from 'vue'
+import { useTabStore } from './composables/useTabStore'
 import DomainGroup from './components/DomainGroup.vue'
 
-const tabs = ref<SavedTab[]>([])
-const searchQuery = ref('')
+const {
+  searchQuery,
+  loading,
+  groupedTabs,
+  totalCount,
+  loadTabs,
+  deleteTab,
+  deleteGroup,
+  deleteAll,
+  restoreTab,
+  onStorageChange,
+} = useTabStore()
 
-// Group tabs by domain
-const groupedTabs = computed(() => {
-  const filtered = searchQuery.value
-    ? tabs.value.filter(
-        tab =>
-          tab.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          tab.url.toLowerCase().includes(searchQuery.value.toLowerCase())
-      )
-    : tabs.value
-
-  const groups = new Map<string, SavedTab[]>()
-  for (const tab of filtered) {
-    const existing = groups.get(tab.domain) || []
-    existing.push(tab)
-    groups.set(tab.domain, existing)
+function handleClearAll() {
+  if (confirm('Delete all saved tabs?')) {
+    deleteAll()
   }
+}
 
-  // Sort groups alphabetically, tabs within group by savedAt desc
-  return Array.from(groups.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([domain, domainTabs]) => ({
-      domain,
-      tabs: domainTabs.sort((a, b) => b.savedAt - a.savedAt),
-    }))
+onMounted(() => {
+  loadTabs()
+  chrome.storage.onChanged.addListener(onStorageChange)
 })
 
-const totalCount = computed(() => tabs.value.length)
-
-async function loadTabs() {
-  tabs.value = await getTabs()
-}
-
-async function handleDeleteTab(id: string) {
-  await removeTab(id)
-  tabs.value = tabs.value.filter(t => t.id !== id)
-}
-
-async function handleDeleteGroup(domain: string) {
-  const remaining = tabs.value.filter(t => t.domain !== domain)
-  await saveTabs(remaining)
-  tabs.value = remaining
-}
-
-async function handleClearAll() {
-  if (confirm('Delete all saved tabs?')) {
-    await clearAllTabs()
-    tabs.value = []
-  }
-}
-
-function handleRestoreTab(url: string) {
-  chrome.tabs.create({ url })
-}
-
-onMounted(loadTabs)
-
-// Listen for storage changes (if tabs saved from background)
-chrome.storage.onChanged.addListener((changes) => {
-  if (changes.tabs) {
-    tabs.value = changes.tabs.newValue || []
-  }
+onUnmounted(() => {
+  chrome.storage.onChanged.removeListener(onStorageChange)
 })
 </script>
 
@@ -88,7 +49,11 @@ chrome.storage.onChanged.addListener((changes) => {
     </header>
 
     <main class="content">
-      <div v-if="groupedTabs.length === 0" class="empty-state">
+      <div v-if="loading" class="loading-state">
+        <p>Loading...</p>
+      </div>
+
+      <div v-else-if="groupedTabs.length === 0" class="empty-state">
         <p>No saved tabs yet. Click the TabSilo icon to save your open tabs.</p>
       </div>
 
@@ -97,9 +62,9 @@ chrome.storage.onChanged.addListener((changes) => {
         :key="group.domain"
         :domain="group.domain"
         :tabs="group.tabs"
-        @delete-tab="handleDeleteTab"
-        @delete-group="handleDeleteGroup"
-        @restore-tab="handleRestoreTab"
+        @delete-tab="deleteTab"
+        @delete-group="deleteGroup"
+        @restore-tab="restoreTab"
       />
     </main>
   </div>

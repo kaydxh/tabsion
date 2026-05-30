@@ -1,0 +1,30 @@
+{
+  "name": "onetab",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "vue": "^3.5.35"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.33",
+    "@types/chrome": "^0.1.42",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "jsdom": "^27.0.1",
+    "typescript": "^6.0.3",
+    "vite": "^7.3.3",
+    "vitest": "^3.2.4"
+  }
+}

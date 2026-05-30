@@ -14,6 +14,13 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        'tab-manager': resolve(__dirname, 'src/pages/tab-manager/index.html'),
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

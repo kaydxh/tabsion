@@ -1,20 +1,16 @@
 {
-  "name": "onetab",
+  "name": "tabsilo",
   "version": "1.0.0",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "description": "Chrome extension that saves tabs to a global pool, auto-groups by subdomain, and deduplicates by URL.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "test": "vitest",
     "test:run": "vitest run"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": ["chrome-extension", "tab-manager", "productivity", "deduplication"],
+  "author": "kaydxh",
+  "license": "MIT",
   "dependencies": {
     "vue": "^3.5.35"
   },
